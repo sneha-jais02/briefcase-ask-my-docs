@@ -1,0 +1,60 @@
+{
+  "documents": [
+    {
+      "title": "Fictional Case: Termination for Convenience",
+      "source_url": "eval://termination-convenience",
+      "jurisdiction": "Fictional",
+      "court": "Demonstration Court",
+      "case_number": "DEMO-2025-01",
+      "document_date": "2025-02-14",
+      "text": "FICTIONAL TRAINING MATERIAL — NOT REAL LAW.\n\nSECTION 4.2 Termination for Convenience\nEither party may terminate this agreement for convenience by providing the other party with thirty days' prior written notice. The notice must be delivered to the addresses designated in the agreement."
+    },
+    {
+      "title": "Fictional Case: Written Contract Limitation Period",
+      "source_url": "eval://contract-limitations",
+      "jurisdiction": "Fictional",
+      "court": "Demonstration Court",
+      "case_number": "DEMO-2025-02",
+      "document_date": "2025-03-03",
+      "text": "FICTIONAL TRAINING MATERIAL — NOT REAL LAW.\n\nSECTION 12.1 Limitation Period for Contract Claims\nAn action for breach of a written contract must be filed within six years after the claim accrues. The parties cannot shorten this period by informal correspondence."
+    },
+    {
+      "title": "Fictional Case: Survival of Confidentiality Duties",
+      "source_url": "eval://confidentiality-survival",
+      "jurisdiction": "Fictional",
+      "court": "Demonstration Court",
+      "case_number": "DEMO-2025-03",
+      "document_date": "2025-04-21",
+      "text": "FICTIONAL TRAINING MATERIAL — NOT REAL LAW.\n\nSECTION 8.4 Continuing Confidentiality Obligations\nThe confidentiality obligations in this agreement continue for five years after termination. Trade secrets remain protected for as long as they qualify as trade secrets under the agreement."
+    },
+    {
+      "title": "Fictional Case: Emergency Injunctive Relief",
+      "source_url": "eval://injunctive-relief",
+      "jurisdiction": "Fictional",
+      "court": "Demonstration Court",
+      "case_number": "DEMO-2025-04",
+      "document_date": "2025-05-09",
+      "text": "FICTIONAL TRAINING MATERIAL — NOT REAL LAW.\n\nSECTION 15.2 Emergency Relief\nA party may seek temporary injunctive relief from a court of competent jurisdiction to prevent irreparable harm. Seeking such relief does not waive other remedies."
+    }
+  ],
+  "questions": [
+    {
+      "question": "How many days of prior written notice are required for termination for convenience?",
+      "jurisdiction": "Fictional",
+      "expected_titles": ["Fictional Case: Termination for Convenience"],
+      "reference_answer": "Either party may terminate this agreement for convenience by providing the other party with thirty days' prior written notice."
+    },
+    {
+      "question": "What is the filing deadline for breach of a written contract?",
+      "jurisdiction": "Fictional",
+      "expected_titles": ["Fictional Case: Written Contract Limitation Period"],
+      "reference_answer": "An action for breach of a written contract must be filed within six years after the claim accrues."
+    },
+    {
+      "question": "How long do confidentiality obligations continue after termination?",
+      "jurisdiction": "Fictional",
+      "expected_titles": ["Fictional Case: Survival of Confidentiality Duties"],
+      "reference_answer": "The confidentiality obligations in this agreement continue for five years after termination."
+    }
+  ]
+}

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b2d">
+  <title>Briefcase — Ask My Docs</title>
+  <style>
+    :root { color-scheme: light; --ink:#172437; --muted:#65748b; --line:#e0e6ed; --paper:#f6f8fb; --blue:#265cc5; --blue-soft:#edf3ff; }
+    * { box-sizing:border-box } body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif }
+    header { height:68px; background:#101b2d; color:white; display:flex; align-items:center; justify-content:space-between; padding:0 max(24px,calc((100% - 1200px)/2)) }
+    .brand { font-size:18px; font-weight:750; letter-spacing:-.03em } .brand span { color:#91b5ff } .header-note { font-size:12px; color:#b2bdcf }
+    main { max-width:1200px; margin:42px auto; padding:0 24px } .hero { margin-bottom:28px } .eyebrow { color:var(--blue); text-transform:uppercase; letter-spacing:.13em; font-size:11px; font-weight:800 }
+    h1 { font-size:34px; letter-spacing:-.045em; line-height:1.15; margin:8px 0 } .hero p { margin:0; color:var(--muted) }
+    .layout { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(270px,.8fr); gap:20px; align-items:start }
+    .card { background:white; border:1px solid var(--line); border-radius:12px; padding:23px; box-shadow:0 4px 14px #192b4210 }
+    .card h2 { font-size:16px; margin:0 0 4px; letter-spacing:-.02em } .sub { color:var(--muted); font-size:13px; margin:0 0 19px }
+    label { display:block; font-weight:650; font-size:12px; margin:14px 0 6px } input,textarea,select { width:100%; font:inherit; color:var(--ink); border:1px solid #d7dfe9; border-radius:7px; padding:10px 12px; background:#fff }
+    textarea { resize:vertical; min-height:100px } input:focus,textarea:focus,select:focus { outline:3px solid #265cc522; border-color:var(--blue) }
+    button { border:0; border-radius:7px; font:inherit; font-weight:700; cursor:pointer; padding:10px 15px; transition:background .15s,transform .15s }
+    button:hover { transform:translateY(-1px) } button:disabled { opacity:.55; cursor:wait; transform:none }
+    .primary { color:#fff; background:var(--blue) } .primary:hover { background:#194ba9 } .quiet { color:var(--blue); background:var(--blue-soft) }
+    .ask-row { display:flex; gap:10px; align-items:end } .ask-row .grow { flex:1 } .ask-row label { margin-top:0 }
+    .answer { white-space:pre-wrap; margin-top:22px; padding:16px; background:#fafbfd; border:1px solid var(--line); border-radius:8px; min-height:72px }
+    .citations { display:grid; gap:10px; margin-top:12px } .citation { padding:13px; border:1px solid var(--line); border-left:3px solid var(--blue); border-radius:7px }
+    .citation h3 { font-size:13px; margin:0 0 3px } .citation p { font-size:12px; color:var(--muted); margin:3px 0 } .citation a { color:var(--blue); overflow-wrap:anywhere }
+    .notice { font-size:12px; color:var(--muted); margin-top:12px } .status { color:var(--muted); font-size:12px; min-height:19px }
+    .divider { height:1px; background:var(--line); margin:20px 0 } .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 12px }
+    .badge { display:inline-block; background:#eef2f6; color:#516178; font-size:10px; padding:2px 7px; border-radius:99px; font-weight:750; text-transform:uppercase; letter-spacing:.05em }
+    .hidden { display:none !important } .top-actions { display:flex; align-items:center; gap:12px } .identity { color:#b2bdcf; font-size:12px }
+    @media(max-width:760px) { main { margin:27px auto } .layout { grid-template-columns:1fr } .ask-row { display:block } .ask-row button { width:100%; margin-top:10px } header { padding:0 20px } h1 { font-size:29px } }
+  </style>
+</head>
+<body>
+  <header><div class="brand">Briefcase<span>.</span></div><div class="top-actions"><div class="identity" id="identity"></div><button class="quiet hidden" id="logoutButton" type="button">Sign out</button></div></header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Ask My Docs · Legal</div>
+      <h1>Research your documents.<br>Keep every answer grounded.</h1>
+      <p>Hybrid search finds the right passages; every response links back to its source.</p>
+    </section>
+    <section class="card" id="loginPanel">
+      <h2>Sign in to your workspace</h2>
+      <p class="sub">Ask your workspace administrator for an account.</p>
+      <form id="loginForm">
+        <label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required>
+        <label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required>
+        <button class="primary" id="loginButton" type="submit">Sign in</button>
+        <div id="loginStatus" class="status" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+    <div class="layout hidden" id="workspace">
+      <section class="card">
+        <h2>Ask a question</h2>
+        <p class="sub">Answers use only your indexed documents and include verifiable citations.</p>
+        <div class="ask-row">
+          <div class="grow"><label for="question">Your question</label><textarea id="question" placeholder="What does the agreement say about termination for convenience?"></textarea></div>
+          <button class="primary" id="askButton">Ask →</button>
+        </div>
+        <label for="jurisdiction">Filter by jurisdiction <span class="badge">Optional</span></label>
+        <input id="jurisdiction" placeholder="e.g. New York">
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+        <div id="answer" class="answer" aria-live="polite">Your cited answer will appear here.</div>
+        <div id="citations" class="citations"></div>
+        <p class="notice">Research aid only—not legal advice. Verify citations against the source document.</p>
+      </section>
+      <aside class="card">
+        <h2>Document library</h2>
+        <p class="sub">Add or refresh a versioned legal source.</p>
+        <form id="uploadForm">
+          <label for="file">Document file</label><input id="file" name="file" type="file" accept=".pdf,.docx,.txt,.md" required>
+          <label for="title">Document title</label><input id="title" name="title" required maxlength="500" placeholder="Case name or report title">
+          <label for="sourceUrl">Canonical source URL or ID</label><input id="sourceUrl" name="source_url" required maxlength="2000" placeholder="https://…">
+          <div class="meta-grid">
+            <div><label for="jurisdictionMeta">Jurisdiction</label><input id="jurisdictionMeta" name="jurisdiction" placeholder="Federal"></div>
+            <div><label for="court">Court</label><input id="court" name="court" placeholder="Court name"></div>
+            <div><label for="caseNumber">Case number</label><input id="caseNumber" name="case_number" placeholder="Docket no."></div>
+            <div><label for="documentDate">Decision date</label><input id="documentDate" name="document_date" type="date"></div>
+          </div>
+          <button class="quiet" type="submit" id="uploadButton">Index document</button>
+          <div id="uploadStatus" class="status" role="status" aria-live="polite"></div>
+        </form>
+        <div class="divider"></div>
+        <h2>Sources</h2>
+        <div id="documentList" class="citations"><p class="sub">Sign in to load your workspace library.</p></div>
+        <section class="hidden" id="userAdmin">
+          <div class="divider"></div>
+          <h2>Workspace access</h2>
+          <p class="sub">Add an administrator, editor, or read-only viewer.</p>
+          <form id="userForm">
+            <label for="memberEmail">Member email</label><input id="memberEmail" type="email" required>
+            <label for="memberPassword">Temporary password (12+ characters)</label><input id="memberPassword" type="password" minlength="12" required>
+            <label for="memberRole">Role</label>
+            <select id="memberRole"><option value="viewer">Viewer — search and read</option><option value="editor">Editor — search and upload</option><option value="admin">Admin — manage workspace access</option></select>
+            <button class="quiet" type="submit">Add member</button><div class="status" id="userStatus" role="status" aria-live="polite"></div>
+          </form>
+        </section>
+        <section class="hidden" id="workspaceAdmin">
+          <div class="divider"></div>
+          <h2>New client workspace</h2>
+          <p class="sub">Create a separate, isolated client library and its first admin.</p>
+          <form id="workspaceForm">
+            <label for="newWorkspaceName">Workspace name</label><input id="newWorkspaceName" required minlength="2">
+            <label for="workspaceAdminEmail">First administrator email</label><input id="workspaceAdminEmail" type="email" required>
+            <label for="workspaceAdminPassword">Temporary password (12+ characters)</label><input id="workspaceAdminPassword" type="password" minlength="12" required>
+            <button class="quiet" type="submit">Create workspace</button><div class="status" id="workspaceStatus" role="status" aria-live="polite"></div>
+          </form>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let accessToken = sessionStorage.getItem("briefcase-token");
+    let currentUser = null;
+    let sessionId = sessionStorage.getItem("briefcase-session");
+    const headers = () => ({ "Authorization": `Bearer ${accessToken}` });
+    const setStatus = (element, message) => { element.textContent = message; };
+    function showSignedIn(user) {
+      currentUser = user;
+      $("identity").textContent = `${user.email} · ${user.role.replace("_", " ")}`;
+      $("loginPanel").classList.add("hidden");
+      $("workspace").classList.remove("hidden");
+      $("logoutButton").classList.remove("hidden");
+      $("uploadForm").classList.toggle("hidden", user.role === "viewer");
+      $("userAdmin").classList.toggle("hidden", !["admin", "platform_admin"].includes(user.role));
+      $("workspaceAdmin").classList.toggle("hidden", user.role !== "platform_admin");
+      loadDocuments();
+    }
+    function signOut(message = "") {
+      accessToken = null;
+      currentUser = null;
+      sessionId = null;
+      sessionStorage.removeItem("briefcase-token");
+      sessionStorage.removeItem("briefcase-user");
+      sessionStorage.removeItem("briefcase-session");
+      $("workspace").classList.add("hidden");
+      $("loginPanel").classList.remove("hidden");
+      $("logoutButton").classList.add("hidden");
+      $("identity").textContent = "";
+      setStatus($("loginStatus"), message);
+      $("documentList").replaceChildren();
+    }
+    async function authorizedFetch(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { ...headers(), ...(options.headers || {}) },
+      });
+      if (response.status === 401 && accessToken) {
+        signOut("Your session expired. Please sign in again.");
+      }
+      return response;
+    }
+    function citationCard(source) {
+      const card = document.createElement("article"); card.className = "citation";
+      const title = document.createElement("h3"); title.textContent = `[${source.id}] ${source.title}`; card.append(title);
+      const meta = [source.court, source.jurisdiction, source.case_number, source.document_date, `v${source.version}`].filter(Boolean).join(" · ");
+      const details = document.createElement("p"); details.textContent = `${meta}${source.section_title ? ` · ${source.section_title}` : ""}`; card.append(details);
+      const excerpt = document.createElement("p"); excerpt.textContent = source.excerpt; card.append(excerpt);
+      if (source.source_url) {
+        if (/^https?:\/\//i.test(source.source_url)) {
+          const link = document.createElement("a"); link.href = source.source_url; link.target = "_blank"; link.rel = "noopener noreferrer"; link.textContent = "Open source ↗"; card.append(link);
+        }
+      }
+      return card;
+    }
+    $("askButton").addEventListener("click", async () => {
+      if (!accessToken) { setStatus($("status"), "Sign in first."); return; }
+      const question = $("question").value.trim();
+      if (question.length < 3) { setStatus($("status"), "Enter a question with at least 3 characters."); return; }
+      $("askButton").disabled = true; setStatus($("status"), "Searching, reranking, and verifying citations…");
+      $("citations").replaceChildren();
+      try {
+        const response = await authorizedFetch("/api/ask", { method:"POST", headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({ question, jurisdiction:$("jurisdiction").value.trim() || null, session_id:sessionId }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Request failed.");
+        sessionId = result.session_id; sessionStorage.setItem("briefcase-session", sessionId);
+        $("answer").textContent = result.answer;
+        result.citations.forEach((source) => $("citations").append(citationCard(source)));
+        const sourceCount = `${result.citations.length} source${result.citations.length === 1 ? "" : "s"}`;
+        const mode = result.generation_mode === "llm"
+          ? "AI synthesis"
+          : result.generation_mode === "extractive_fallback"
+            ? "Verified source excerpts (the model response failed citation checks)"
+            : "Quoted source excerpts — configure your AI provider key in .env for synthesis";
+        setStatus($("status"), `${mode} · ${sourceCount}${result.generation_notice ? ` · ${result.generation_notice}` : ""}`);
+      } catch (error) { setStatus($("status"), error.message); }
+      finally { $("askButton").disabled = false; }
+    });
+    $("uploadForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!accessToken) { setStatus($("uploadStatus"), "Sign in first."); return; }
+      $("uploadButton").disabled = true; setStatus($("uploadStatus"), "Extracting and indexing document…");
+      try {
+        const formData = new FormData(form);
+        if (!formData.get("document_date")) formData.delete("document_date");
+        const response = await authorizedFetch("/api/documents", { method:"POST", body:formData });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Upload failed.");
+        setStatus($("uploadStatus"), result.unchanged ? "This document version is already indexed." : `Indexed ${result.chunks_indexed} chunks (version ${result.version}).`);
+        form.reset();
+        await loadDocuments();
+      } catch (error) { setStatus($("uploadStatus"), error.message); }
+      finally { $("uploadButton").disabled = false; }
+    });
+    async function loadDocuments() {
+      if (!accessToken) return;
+      try {
+        const response = await authorizedFetch("/api/documents");
+        const items = await response.json();
+        if (!response.ok) throw new Error(items.detail || "Could not load documents.");
+        const list = $("documentList"); list.replaceChildren();
+        if (!items.length) { const empty = document.createElement("p"); empty.className = "sub"; empty.textContent = "No documents indexed yet."; list.append(empty); }
+        items.forEach((item) => {
+          const card = document.createElement("article"); card.className = "citation";
+          const title = document.createElement("h3"); title.textContent = item.title; card.append(title);
+          const meta = document.createElement("p"); meta.textContent = [item.jurisdiction, item.court, item.case_number, `v${item.version}`].filter(Boolean).join(" · "); card.append(meta);
+          list.append(card);
+        });
+      } catch (error) { setStatus($("uploadStatus"), error.message); }
+    }
+    $("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      $("loginButton").disabled = true;
+      setStatus($("loginStatus"), "Signing in…");
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: $("loginEmail").value, password: $("loginPassword").value }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Sign in failed.");
+        accessToken = result.access_token;
+        sessionStorage.setItem("briefcase-token", accessToken);
+        sessionStorage.setItem("briefcase-user", JSON.stringify(result.user));
+        $("loginPassword").value = "";
+        setStatus($("loginStatus"), "");
+        showSignedIn(result.user);
+      } catch (error) {
+        setStatus($("loginStatus"), error.message);
+      } finally {
+        $("loginButton").disabled = false;
+      }
+    });
+    $("logoutButton").addEventListener("click", () => signOut());
+    $("userForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      setStatus($("userStatus"), "Creating account…");
+      try {
+        const response = await authorizedFetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: $("memberEmail").value,
+            password: $("memberPassword").value,
+            role: $("memberRole").value,
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Could not create account.");
+        form.reset();
+          setStatus($("userStatus"), `Added ${result.email} as ${result.role}. Share the temporary password securely.`);
+      } catch (error) {
+        setStatus($("userStatus"), error.message);
+      }
+    });
+    $("workspaceForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      setStatus($("workspaceStatus"), "Creating isolated workspace…");
+      try {
+        const response = await authorizedFetch("/api/workspaces", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: $("newWorkspaceName").value,
+            admin_email: $("workspaceAdminEmail").value,
+            admin_password: $("workspaceAdminPassword").value,
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Could not create workspace.");
+        form.reset();
+        setStatus($("workspaceStatus"), `Created "${result.name}" for ${result.admin_email}. Share the admin password securely.`);
+      } catch (error) {
+        setStatus($("workspaceStatus"), error.message);
+      }
+    });
+    if (accessToken) {
+      try {
+        const savedUser = JSON.parse(sessionStorage.getItem("briefcase-user") || "null");
+        if (savedUser) showSignedIn(savedUser);
+        else signOut("Please sign in to continue.");
+      } catch {
+        signOut("Please sign in to continue.");
+      }
+    }
+  </script>
+</body>
+</html>

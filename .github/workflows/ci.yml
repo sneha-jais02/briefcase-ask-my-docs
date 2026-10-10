@@ -1,0 +1,55 @@
+name: RAG CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-evaluate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: rag
+          POSTGRES_USER: rag
+          POSTGRES_PASSWORD: rag
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rag -d rag"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://rag:rag@localhost:5432/rag
+      API_KEY: ci-evaluation-key
+      JWT_SECRET: ci-jwt-signing-secret-that-is-long-enough
+      BOOTSTRAP_WORKSPACE_NAME: CI legal workspace
+      BOOTSTRAP_ADMIN_EMAIL: admin@example.test
+      BOOTSTRAP_ADMIN_PASSWORD: ci-bootstrap-password-is-long-enough
+      RAG_EVAL_MODE: "true"
+      OPENAI_API_KEY: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check app tests scripts eval
+      - run: pytest -q
+      - name: Evaluate retrieval and citation quality
+        shell: bash
+        run: |
+          python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/ask-my-docs.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:8000/health
+          python scripts/evaluate_retrieval.py
