@@ -44,3 +44,24 @@ def test_metrics_penalize_uncited_and_unsupported_answer_claims() -> None:
     assert metrics["answer_relevance"] > 0
     assert metrics["context_precision@3"] == 1
     assert metrics["recall@3"] == 1
+
+
+def test_faithfulness_keeps_citation_after_sentence_punctuation() -> None:
+    case = {
+        "expected_titles": ["A"],
+        "reference_answer": "The notice period is thirty days.",
+    }
+    answer = {
+        "answer": "The notice period is thirty days. [C1]",
+        "citations": [
+            {
+                "id": "C1",
+                "title": "A",
+                "excerpt": "The notice period is thirty days.",
+            }
+        ],
+    }
+
+    metrics = retrieval_metrics([case], [answer])
+
+    assert metrics["faithfulness"] == 1

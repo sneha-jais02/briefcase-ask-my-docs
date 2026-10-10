@@ -9,6 +9,7 @@ STOP_WORDS = {
     "what", "when", "where", "which", "who", "why", "with",
 }
 MARKER = re.compile(r"\[(C\d+)\]")
+SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?])\s+(?!\[C\d+\])|\n+")
 
 
 def _terms(text: str) -> set[str]:
@@ -51,7 +52,7 @@ def retrieval_metrics(
 
         factual_sentences = [
             sentence.strip()
-            for sentence in re.split(r"(?<=[.!?])\s+|\n+", answer.get("answer", ""))
+            for sentence in SENTENCE_BOUNDARY.split(answer.get("answer", ""))
             if sentence.strip()
         ]
         sentence_scores = []
